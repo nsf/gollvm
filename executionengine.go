@@ -8,7 +8,7 @@ import "C"
 import "unsafe"
 import "os"
 
-func LinkInJIT() { C.LLVMLinkInJIT() }
+func LinkInJIT()         { C.LLVMLinkInJIT() }
 func LinkInInterpreter() { C.LLVMLinkInInterpreter() }
 
 type (
@@ -112,9 +112,9 @@ func NewJITCompiler(m Module, optLevel int) (ee ExecutionEngine, err os.Error) {
 //                               unsigned OptLevel,
 //                               char **OutError);
 
-func (ee ExecutionEngine) Dispose() { C.LLVMDisposeExecutionEngine(ee.C) }
-func (ee ExecutionEngine) RunStaticConstructors () { C.LLVMRunStaticConstructors(ee.C) }
-func (ee ExecutionEngine) RunStaticDestructors () { C.LLVMRunStaticDestructors(ee.C) }
+func (ee ExecutionEngine) Dispose()               { C.LLVMDisposeExecutionEngine(ee.C) }
+func (ee ExecutionEngine) RunStaticConstructors() { C.LLVMRunStaticConstructors(ee.C) }
+func (ee ExecutionEngine) RunStaticDestructors()  { C.LLVMRunStaticDestructors(ee.C) }
 
 // TODO(nsf): figure out how to convert that stuff from Go's "os.Argv"
 //int LLVMRunFunctionAsMain(LLVMExecutionEngineRef EE, LLVMValueRef F,
