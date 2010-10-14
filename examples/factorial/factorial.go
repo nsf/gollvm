@@ -62,8 +62,12 @@ func test() {
 	defer pass.Dispose()
 
 	pass.Add(engine.TargetData())
-
-	// TODO: run pass manager with optimizations
+	pass.AddConstantPropagationPass()
+	pass.AddInstructionCombiningPass()
+	pass.AddPromoteMemoryToRegisterPass()
+	pass.AddGVNPass()
+	pass.AddCFGSimplificationPass()
+	pass.Run(mod)
 
 	mod.Dump()
 
