@@ -529,10 +529,29 @@ func (th TypeHandle) Dispose()      { C.LLVMDisposeTypeHandle(th.c) }
 //-------------------------------------------------------------------------
 // llvm.Value
 //-------------------------------------------------------------------------
+
+// Operations on all values
+func (v Value) Type() (t Type) { t.c = C.LLVMTypeOf(v.c); return }
+func (v Value) Name() string   { return C.GoString(C.LLVMGetValueName(v.c)) }
+func (v Value) SetName(name string) {
+	cname := C.CString(name)
+	C.LLVMSetValueName(v.c, cname)
+	C.free(unsafe.Pointer(cname))
+}
+func (v Value) Dump()                       { C.LLVMDumpValue(v.c) }
+func (v Value) ReplaceAllUsesWith(nv Value) { C.LLVMReplaceAllUsesWith(v.c, nv.c) }
+func (v Value) HasMetadata() bool           { return C.LLVMHasMetadata(v.c) != 0 }
+func (v Value) Metadata(kind int) (rv Value) {
+	rv.c = C.LLVMGetMetadata(v.c, C.unsigned(kind))
+	return
+}
+func (v Value) SetMetadata(kind int, node Value) {
+	C.LLVMSetMetadata(v.c, C.unsigned(kind), node.c)
+}
+
 // The bulk of LLVM's object model consists of values, which comprise a very
 // rich type hierarchy.
 
-// TODO
 //#define LLVM_FOR_EACH_VALUE_SUBCLASS(macro) \
 //  macro(Argument)                           \
 //  macro(BasicBlock)                         \
@@ -599,32 +618,81 @@ func (th TypeHandle) Dispose()      { C.LLVMDisposeTypeHandle(th.c) }
 //      macro(ExtractValueInst)               \
 //      macro(LoadInst)                       \
 //      macro(VAArgInst)
-
-// Operations on all values
-func (v Value) Type() (t Type) { t.c = C.LLVMTypeOf(v.c); return }
-func (v Value) Name() string   { return C.GoString(C.LLVMGetValueName(v.c)) }
-func (v Value) SetName(name string) {
-	cname := C.CString(name)
-	C.LLVMSetValueName(v.c, cname)
-	C.free(unsafe.Pointer(cname))
-}
-func (v Value) Dump()                       { C.LLVMDumpValue(v.c) }
-func (v Value) ReplaceAllUsesWith(nv Value) { C.LLVMReplaceAllUsesWith(v.c, nv.c) }
-func (v Value) HasMetadata() bool           { return C.LLVMHasMetadata(v.c) != 0 }
-func (v Value) Metadata(kind int) (rv Value) {
-	rv.c = C.LLVMGetMetadata(v.c, C.unsigned(kind))
+//#define LLVM_DECLARE_VALUE_CAST(name) \
+//  func (v Value) IsA##name() (rv Value) { rv.c = C.LLVMIsA##name(v.c); return } ||
+//LLVM_FOR_EACH_VALUE_SUBCLASS(LLVM_DECLARE_VALUE_CAST)
+//
+// Conversion functions. Generated using preprocess statements above. Return
+// the input value if it is an instance of the specified class, otherwise NULL.
+// See llvm::dyn_cast_or_null<>.
+func (v Value) IsAArgument() (rv Value)   { rv.c = C.LLVMIsAArgument(v.c); return }
+func (v Value) IsABasicBlock() (rv Value) { rv.c = C.LLVMIsABasicBlock(v.c); return }
+func (v Value) IsAInlineAsm() (rv Value)  { rv.c = C.LLVMIsAInlineAsm(v.c); return }
+func (v Value) IsAUser() (rv Value)       { rv.c = C.LLVMIsAUser(v.c); return }
+func (v Value) IsAConstant() (rv Value)   { rv.c = C.LLVMIsAConstant(v.c); return }
+func (v Value) IsAConstantAggregateZero() (rv Value) {
+	rv.c = C.LLVMIsAConstantAggregateZero(v.c)
 	return
 }
-func (v Value) SetMetadata(kind int, node Value) {
-	C.LLVMSetMetadata(v.c, C.unsigned(kind), node.c)
-}
-
-// TODO
-// Conversion functions. Return the input value if it is an instance of the
-// specified class, otherwise NULL. See llvm::dyn_cast_or_null<>.
-//#define LLVM_DECLARE_VALUE_CAST(name) \
-//  LLVMValueRef LLVMIsA##name(LLVMValueRef Val);
-//LLVM_FOR_EACH_VALUE_SUBCLASS(LLVM_DECLARE_VALUE_CAST)
+func (v Value) IsAConstantArray() (rv Value)       { rv.c = C.LLVMIsAConstantArray(v.c); return }
+func (v Value) IsAConstantExpr() (rv Value)        { rv.c = C.LLVMIsAConstantExpr(v.c); return }
+func (v Value) IsAConstantFP() (rv Value)          { rv.c = C.LLVMIsAConstantFP(v.c); return }
+func (v Value) IsAConstantInt() (rv Value)         { rv.c = C.LLVMIsAConstantInt(v.c); return }
+func (v Value) IsAConstantPointerNull() (rv Value) { rv.c = C.LLVMIsAConstantPointerNull(v.c); return }
+func (v Value) IsAConstantStruct() (rv Value)      { rv.c = C.LLVMIsAConstantStruct(v.c); return }
+func (v Value) IsAConstantVector() (rv Value)      { rv.c = C.LLVMIsAConstantVector(v.c); return }
+func (v Value) IsAGlobalValue() (rv Value)         { rv.c = C.LLVMIsAGlobalValue(v.c); return }
+func (v Value) IsAFunction() (rv Value)            { rv.c = C.LLVMIsAFunction(v.c); return }
+func (v Value) IsAGlobalAlias() (rv Value)         { rv.c = C.LLVMIsAGlobalAlias(v.c); return }
+func (v Value) IsAGlobalVariable() (rv Value)      { rv.c = C.LLVMIsAGlobalVariable(v.c); return }
+func (v Value) IsAUndefValue() (rv Value)          { rv.c = C.LLVMIsAUndefValue(v.c); return }
+func (v Value) IsAInstruction() (rv Value)         { rv.c = C.LLVMIsAInstruction(v.c); return }
+func (v Value) IsABinaryOperator() (rv Value)      { rv.c = C.LLVMIsABinaryOperator(v.c); return }
+func (v Value) IsACallInst() (rv Value)            { rv.c = C.LLVMIsACallInst(v.c); return }
+func (v Value) IsAIntrinsicInst() (rv Value)       { rv.c = C.LLVMIsAIntrinsicInst(v.c); return }
+func (v Value) IsADbgInfoIntrinsic() (rv Value)    { rv.c = C.LLVMIsADbgInfoIntrinsic(v.c); return }
+func (v Value) IsADbgDeclareInst() (rv Value)      { rv.c = C.LLVMIsADbgDeclareInst(v.c); return }
+func (v Value) IsAEHSelectorInst() (rv Value)      { rv.c = C.LLVMIsAEHSelectorInst(v.c); return }
+func (v Value) IsAMemIntrinsic() (rv Value)        { rv.c = C.LLVMIsAMemIntrinsic(v.c); return }
+func (v Value) IsAMemCpyInst() (rv Value)          { rv.c = C.LLVMIsAMemCpyInst(v.c); return }
+func (v Value) IsAMemMoveInst() (rv Value)         { rv.c = C.LLVMIsAMemMoveInst(v.c); return }
+func (v Value) IsAMemSetInst() (rv Value)          { rv.c = C.LLVMIsAMemSetInst(v.c); return }
+func (v Value) IsACmpInst() (rv Value)             { rv.c = C.LLVMIsACmpInst(v.c); return }
+func (v Value) IsAFCmpInst() (rv Value)            { rv.c = C.LLVMIsAFCmpInst(v.c); return }
+func (v Value) IsAICmpInst() (rv Value)            { rv.c = C.LLVMIsAICmpInst(v.c); return }
+func (v Value) IsAExtractElementInst() (rv Value)  { rv.c = C.LLVMIsAExtractElementInst(v.c); return }
+func (v Value) IsAGetElementPtrInst() (rv Value)   { rv.c = C.LLVMIsAGetElementPtrInst(v.c); return }
+func (v Value) IsAInsertElementInst() (rv Value)   { rv.c = C.LLVMIsAInsertElementInst(v.c); return }
+func (v Value) IsAInsertValueInst() (rv Value)     { rv.c = C.LLVMIsAInsertValueInst(v.c); return }
+func (v Value) IsAPHINode() (rv Value)             { rv.c = C.LLVMIsAPHINode(v.c); return }
+func (v Value) IsASelectInst() (rv Value)          { rv.c = C.LLVMIsASelectInst(v.c); return }
+func (v Value) IsAShuffleVectorInst() (rv Value)   { rv.c = C.LLVMIsAShuffleVectorInst(v.c); return }
+func (v Value) IsAStoreInst() (rv Value)           { rv.c = C.LLVMIsAStoreInst(v.c); return }
+func (v Value) IsATerminatorInst() (rv Value)      { rv.c = C.LLVMIsATerminatorInst(v.c); return }
+func (v Value) IsABranchInst() (rv Value)          { rv.c = C.LLVMIsABranchInst(v.c); return }
+func (v Value) IsAInvokeInst() (rv Value)          { rv.c = C.LLVMIsAInvokeInst(v.c); return }
+func (v Value) IsAReturnInst() (rv Value)          { rv.c = C.LLVMIsAReturnInst(v.c); return }
+func (v Value) IsASwitchInst() (rv Value)          { rv.c = C.LLVMIsASwitchInst(v.c); return }
+func (v Value) IsAUnreachableInst() (rv Value)     { rv.c = C.LLVMIsAUnreachableInst(v.c); return }
+func (v Value) IsAUnwindInst() (rv Value)          { rv.c = C.LLVMIsAUnwindInst(v.c); return }
+func (v Value) IsAUnaryInstruction() (rv Value)    { rv.c = C.LLVMIsAUnaryInstruction(v.c); return }
+func (v Value) IsAAllocaInst() (rv Value)          { rv.c = C.LLVMIsAAllocaInst(v.c); return }
+func (v Value) IsACastInst() (rv Value)            { rv.c = C.LLVMIsACastInst(v.c); return }
+func (v Value) IsABitCastInst() (rv Value)         { rv.c = C.LLVMIsABitCastInst(v.c); return }
+func (v Value) IsAFPExtInst() (rv Value)           { rv.c = C.LLVMIsAFPExtInst(v.c); return }
+func (v Value) IsAFPToSIInst() (rv Value)          { rv.c = C.LLVMIsAFPToSIInst(v.c); return }
+func (v Value) IsAFPToUIInst() (rv Value)          { rv.c = C.LLVMIsAFPToUIInst(v.c); return }
+func (v Value) IsAFPTruncInst() (rv Value)         { rv.c = C.LLVMIsAFPTruncInst(v.c); return }
+func (v Value) IsAIntToPtrInst() (rv Value)        { rv.c = C.LLVMIsAIntToPtrInst(v.c); return }
+func (v Value) IsAPtrToIntInst() (rv Value)        { rv.c = C.LLVMIsAPtrToIntInst(v.c); return }
+func (v Value) IsASExtInst() (rv Value)            { rv.c = C.LLVMIsASExtInst(v.c); return }
+func (v Value) IsASIToFPInst() (rv Value)          { rv.c = C.LLVMIsASIToFPInst(v.c); return }
+func (v Value) IsATruncInst() (rv Value)           { rv.c = C.LLVMIsATruncInst(v.c); return }
+func (v Value) IsAUIToFPInst() (rv Value)          { rv.c = C.LLVMIsAUIToFPInst(v.c); return }
+func (v Value) IsAZExtInst() (rv Value)            { rv.c = C.LLVMIsAZExtInst(v.c); return }
+func (v Value) IsAExtractValueInst() (rv Value)    { rv.c = C.LLVMIsAExtractValueInst(v.c); return }
+func (v Value) IsALoadInst() (rv Value)            { rv.c = C.LLVMIsALoadInst(v.c); return }
+func (v Value) IsAVAArgInst() (rv Value)           { rv.c = C.LLVMIsAVAArgInst(v.c); return }
 
 // Operations on Uses
 func (v Value) FirstUse() (u Use)  { u.c = C.LLVMGetFirstUse(v.c); return }
