@@ -12,6 +12,8 @@ import "os"
 // TODO: Promote *InContext functions to Context methods?
 // TODO: Use Go's reflection in order to simplify bindings?
 // TODO: Add type safety?
+// TODO: Doublecheck LLVMBool functions, LLVM C API uses stupid convention
+// where 0 is true and 1 is false
 
 type (
 	Context struct {
