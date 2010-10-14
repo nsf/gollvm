@@ -1131,7 +1131,7 @@ func (b Builder) SetInsertPoint(block BasicBlock, instr Value) {
 	C.LLVMPositionBuilder(b.C, block.C, instr.C)
 }
 func (b Builder) SetInsertPointBefore(instr Value)     { C.LLVMPositionBuilderBefore(b.C, instr.C) }
-func (b Builder) SetInsertPointAtEnd(block BasicBlock) { C.LLVMPositionBuilderBefore(b.C, block.C) }
+func (b Builder) SetInsertPointAtEnd(block BasicBlock) { C.LLVMPositionBuilderAtEnd(b.C, block.C) }
 func (b Builder) GetInsertBlock() (bb BasicBlock)      { bb.C = C.LLVMGetInsertBlock(b.C); return }
 func (b Builder) ClearInsertionPoint()                 { C.LLVMClearInsertionPosition(b.C) }
 func (b Builder) Insert(instr Value)                   { C.LLVMInsertIntoBuilder(b.C, instr.C) }
