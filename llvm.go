@@ -47,15 +47,27 @@ type (
 	Use struct {
 		c C.LLVMUseRef
 	}
-	Attribute C.LLVMAttribute
-	Opcode C.LLVMOpcode
-	TypeKind C.LLVMTypeKind
-	Linkage C.LLVMLinkage
-	Visibility C.LLVMVisibility
-	CallConv C.LLVMCallConv
-	IntPredicate C.LLVMIntPredicate
+	Attribute      C.LLVMAttribute
+	Opcode         C.LLVMOpcode
+	TypeKind       C.LLVMTypeKind
+	Linkage        C.LLVMLinkage
+	Visibility     C.LLVMVisibility
+	CallConv       C.LLVMCallConv
+	IntPredicate   C.LLVMIntPredicate
 	FloatPredicate C.LLVMRealPredicate
 )
+
+func (c Context) IsNil() bool        { return c.c == nil }
+func (c Module) IsNil() bool         { return c.c == nil }
+func (c Type) IsNil() bool           { return c.c == nil }
+func (c TypeHandle) IsNil() bool     { return c.c == nil }
+func (c Value) IsNil() bool          { return c.c == nil }
+func (c BasicBlock) IsNil() bool     { return c.c == nil }
+func (c Builder) IsNil() bool        { return c.c == nil }
+func (c ModuleProvider) IsNil() bool { return c.c == nil }
+func (c MemoryBuffer) IsNil() bool   { return c.c == nil }
+func (c PassManager) IsNil() bool    { return c.c == nil }
+func (c Use) IsNil() bool            { return c.c == nil }
 
 // helpers
 func llvmTypeRefPtr(t *Type) *C.LLVMTypeRef    { return (*C.LLVMTypeRef)(unsafe.Pointer(t)) }
@@ -724,7 +736,7 @@ func ConstVector(scalarConstVals []Value, packed bool) (v Value) {
 }
 
 // Constant expressions 
-func (v Value) Opcode() Opcode            { return Opcode(C.LLVMGetConstOpcode(v.c)) }
+func (v Value) Opcode() Opcode                { return Opcode(C.LLVMGetConstOpcode(v.c)) }
 func AlignOf(t Type) (v Value)                { v.c = C.LLVMAlignOf(t.c); return }
 func SizeOf(t Type) (v Value)                 { v.c = C.LLVMSizeOf(t.c); return }
 func ConstNeg(v Value) (rv Value)             { rv.c = C.LLVMConstNeg(v.c); return }
@@ -832,7 +844,7 @@ func BlockAddress(f Value, bb BasicBlock) (v Value) {
 // Operations on global variables, functions, and aliases (globals)
 func (v Value) GlobalParent() (m Module) { m.c = C.LLVMGetGlobalParent(v.c); return }
 func (v Value) IsDeclaration() bool      { return C.LLVMIsDeclaration(v.c) != 0 }
-func (v Value) Linkage() Linkage     { return Linkage(C.LLVMGetLinkage(v.c)) }
+func (v Value) Linkage() Linkage         { return Linkage(C.LLVMGetLinkage(v.c)) }
 func (v Value) SetLinkage(l Linkage)     { C.LLVMSetLinkage(v.c, C.LLVMLinkage(l)) }
 func (v Value) Section() string          { return C.GoString(C.LLVMGetSection(v.c)) }
 func (v Value) SetSection(str string) {
@@ -840,7 +852,7 @@ func (v Value) SetSection(str string) {
 	C.LLVMSetSection(v.c, cstr)
 	C.free(unsafe.Pointer(cstr))
 }
-func (v Value) Visibility() Visibility { return Visibility(C.LLVMGetVisibility(v.c)) }
+func (v Value) Visibility() Visibility      { return Visibility(C.LLVMGetVisibility(v.c)) }
 func (v Value) SetVisibility(vi Visibility) { C.LLVMSetVisibility(v.c, C.LLVMVisibility(vi)) }
 func (v Value) Alignment() int              { return int(C.LLVMGetAlignment(v.c)) }
 func (v Value) SetAlignment(a int)          { C.LLVMSetAlignment(v.c, C.unsigned(a)) }
