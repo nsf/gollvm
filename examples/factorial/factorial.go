@@ -13,7 +13,7 @@ func test() {
 	// don't do that, because ExecutionEngine takes ownership over module
 	//defer mod.Dispose()
 
-	fac_args := []llvm.Type{ llvm.Int32Type() }
+	fac_args := []llvm.Type{llvm.Int32Type()}
 	fac_type := llvm.FunctionType(llvm.Int32Type(), fac_args, false)
 	fac := llvm.AddFunction(mod, "fac", fac_type)
 	fac.SetFunctionCallConv(llvm.CCallConv)
@@ -37,15 +37,15 @@ func test() {
 
 	builder.SetInsertPointAtEnd(iffalse)
 	n_minus := builder.CreateSub(n, llvm.ConstInt(llvm.Int32Type(), 1, false), "subtmp")
-	call_fac_args := []llvm.Value{ n_minus }
+	call_fac_args := []llvm.Value{n_minus}
 	call_fac := builder.CreateCall(fac, call_fac_args, "calltmp")
 	res_iffalse := builder.CreateMul(n, call_fac, "multmp")
 	builder.CreateBr(end)
 
 	builder.SetInsertPointAtEnd(end)
 	res := builder.CreatePHI(llvm.Int32Type(), "result")
-	phi_vals := []llvm.Value{ res_iftrue, res_iffalse }
-	phi_blocks := []llvm.BasicBlock{ iftrue, iffalse }
+	phi_vals := []llvm.Value{res_iftrue, res_iffalse}
+	phi_blocks := []llvm.BasicBlock{iftrue, iffalse}
 	res.AddIncoming(phi_vals, phi_blocks)
 	builder.CreateRet(res)
 
@@ -63,7 +63,7 @@ func test() {
 
 	pass.Add(engine.TargetData())
 
-	exec_args := []llvm.GenericValue{ llvm.NewGenericValueFromInt(llvm.Int32Type(), 10, false) }
+	exec_args := []llvm.GenericValue{llvm.NewGenericValueFromInt(llvm.Int32Type(), 10, false)}
 	exec_res := engine.RunFunction(fac, exec_args)
 	fmt.Println("-----------------------------------------")
 	fmt.Println("Running fac(10) with JIT...")
