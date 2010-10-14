@@ -12,6 +12,7 @@ import "unsafe"
 // TODO: Use Go's reflection in order to simplify bindings?
 // TODO: Add IsNil for all ref types
 // TODO: Add type safety?
+// TODO: Redeclare non-*Ref types as simple typedefs without structs
 
 type (
 	Context struct {
