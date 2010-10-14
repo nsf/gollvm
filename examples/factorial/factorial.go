@@ -63,6 +63,10 @@ func test() {
 
 	pass.Add(engine.TargetData())
 
+	// TODO: run pass manager with optimizations
+
+	mod.Dump()
+
 	exec_args := []llvm.GenericValue{llvm.NewGenericValueFromInt(llvm.Int32Type(), 10, false)}
 	exec_res := engine.RunFunction(fac, exec_args)
 	fmt.Println("-----------------------------------------")
