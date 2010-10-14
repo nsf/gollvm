@@ -12,7 +12,6 @@ import "unsafe"
 // TODO: Use Go's reflection in order to simplify bindings?
 // TODO: Add IsNil for all ref types
 // TODO: Add type safety?
-// TODO: Redeclare non-*Ref types as simple typedefs without structs
 
 type (
 	Context struct {
@@ -48,30 +47,14 @@ type (
 	Use struct {
 		c C.LLVMUseRef
 	}
-	Attribute struct {
-		c C.LLVMAttribute
-	}
-	Opcode struct {
-		c C.LLVMOpcode
-	}
-	TypeKind struct {
-		c C.LLVMTypeKind
-	}
-	Linkage struct {
-		c C.LLVMLinkage
-	}
-	Visibility struct {
-		c C.LLVMVisibility
-	}
-	CallConv struct {
-		c C.LLVMCallConv
-	}
-	IntPredicate struct {
-		c C.LLVMIntPredicate
-	}
-	FloatPredicate struct {
-		c C.LLVMRealPredicate
-	}
+	Attribute C.LLVMAttribute
+	Opcode C.LLVMOpcode
+	TypeKind C.LLVMTypeKind
+	Linkage C.LLVMLinkage
+	Visibility C.LLVMVisibility
+	CallConv C.LLVMCallConv
+	IntPredicate C.LLVMIntPredicate
+	FloatPredicate C.LLVMRealPredicate
 )
 
 // helpers
@@ -404,10 +387,7 @@ func (m Module) SetInlineAsm(asm string) {
 //     opaque type
 
 // See llvm::LLVMTypeKind::getTypeID.
-func (t Type) TypeKind() (tk TypeKind) {
-	tk.c = C.LLVMGetTypeKind(t.c)
-	return
-}
+func (t Type) TypeKind() TypeKind { return TypeKind(C.LLVMGetTypeKind(t.c)) }
 
 // See llvm::LLVMType::getContext. 
 func (t Type) Context() (c Context) {
@@ -744,7 +724,7 @@ func ConstVector(scalarConstVals []Value, packed bool) (v Value) {
 }
 
 // Constant expressions 
-func (v Value) Opcode() (o Opcode)            { o.c = C.LLVMGetConstOpcode(v.c); return }
+func (v Value) Opcode() Opcode            { return Opcode(C.LLVMGetConstOpcode(v.c)) }
 func AlignOf(t Type) (v Value)                { v.c = C.LLVMAlignOf(t.c); return }
 func SizeOf(t Type) (v Value)                 { v.c = C.LLVMSizeOf(t.c); return }
 func ConstNeg(v Value) (rv Value)             { rv.c = C.LLVMConstNeg(v.c); return }
@@ -776,11 +756,11 @@ func ConstOr(lhs, rhs Value) (v Value)        { v.c = C.LLVMConstOr(lhs.c, rhs.c
 func ConstXor(lhs, rhs Value) (v Value)       { v.c = C.LLVMConstXor(lhs.c, rhs.c); return }
 
 func ConstICmp(pred IntPredicate, lhs, rhs Value) (v Value) {
-	v.c = C.LLVMConstICmp(pred.c, lhs.c, rhs.c)
+	v.c = C.LLVMConstICmp(C.LLVMIntPredicate(pred), lhs.c, rhs.c)
 	return
 }
 func ConstFCmp(pred FloatPredicate, lhs, rhs Value) (v Value) {
-	v.c = C.LLVMConstFCmp(pred.c, lhs.c, rhs.c)
+	v.c = C.LLVMConstFCmp(C.LLVMRealPredicate(pred), lhs.c, rhs.c)
 	return
 }
 
@@ -852,16 +832,16 @@ func BlockAddress(f Value, bb BasicBlock) (v Value) {
 // Operations on global variables, functions, and aliases (globals)
 func (v Value) GlobalParent() (m Module) { m.c = C.LLVMGetGlobalParent(v.c); return }
 func (v Value) IsDeclaration() bool      { return C.LLVMIsDeclaration(v.c) != 0 }
-func (v Value) Linkage() (l Linkage)     { l.c = C.LLVMGetLinkage(v.c); return }
-func (v Value) SetLinkage(l Linkage)     { C.LLVMSetLinkage(v.c, l.c) }
+func (v Value) Linkage() Linkage     { return Linkage(C.LLVMGetLinkage(v.c)) }
+func (v Value) SetLinkage(l Linkage)     { C.LLVMSetLinkage(v.c, C.LLVMLinkage(l)) }
 func (v Value) Section() string          { return C.GoString(C.LLVMGetSection(v.c)) }
 func (v Value) SetSection(str string) {
 	cstr := C.CString(str)
 	C.LLVMSetSection(v.c, cstr)
 	C.free(unsafe.Pointer(cstr))
 }
-func (v Value) Visibility() (vi Visibility) { vi.c = C.LLVMGetVisibility(v.c); return }
-func (v Value) SetVisibility(vi Visibility) { C.LLVMSetVisibility(v.c, vi.c) }
+func (v Value) Visibility() Visibility { return Visibility(C.LLVMGetVisibility(v.c)) }
+func (v Value) SetVisibility(vi Visibility) { C.LLVMSetVisibility(v.c, C.LLVMVisibility(vi)) }
 func (v Value) Alignment() int              { return int(C.LLVMGetAlignment(v.c)) }
 func (v Value) SetAlignment(a int)          { C.LLVMSetAlignment(v.c, C.unsigned(a)) }
 
@@ -925,18 +905,17 @@ func NextFunction(v Value) (rv Value)      { rv.c = C.LLVMGetNextFunction(v.c); 
 func PrevFunction(v Value) (rv Value)      { rv.c = C.LLVMGetPreviousFunction(v.c); return }
 func (v Value) EraseFromParentAsFunction() { C.LLVMDeleteFunction(v.c) }
 func (v Value) IntrinsicID() int           { return int(C.LLVMGetIntrinsicID(v.c)) }
-func (v Value) FunctionCallConv() (cc CallConv) {
-	cc.c = C.LLVMCallConv(C.LLVMGetFunctionCallConv(v.c))
-	return
+func (v Value) FunctionCallConv() CallConv {
+	return CallConv(C.LLVMCallConv(C.LLVMGetFunctionCallConv(v.c)))
 }
-func (v Value) SetFunctionCallConv(cc CallConv) { C.LLVMSetFunctionCallConv(v.c, C.unsigned(cc.c)) }
+func (v Value) SetFunctionCallConv(cc CallConv) { C.LLVMSetFunctionCallConv(v.c, C.unsigned(cc)) }
 func (v Value) GC() string                      { return C.GoString(C.LLVMGetGC(v.c)) }
 func (v Value) SetGC(name string) {
 	cname := C.CString(name)
 	C.LLVMSetGC(v.c, cname)
 	C.free(unsafe.Pointer(cname))
 }
-func (v Value) AddFunctionAttr(a Attribute) { C.LLVMAddFunctionAttr(v.c, a.c) }
+func (v Value) AddFunctionAttr(a Attribute) { C.LLVMAddFunctionAttr(v.c, C.LLVMAttribute(a)) }
 //TODO
 //LLVMAttribute LLVMGetFunctionAttr(LLVMValueRef Fn);
 //void LLVMRemoveFunctionAttr(LLVMValueRef Fn, LLVMAttribute PA);
@@ -1017,11 +996,10 @@ func PrevInstruction(v Value) (rv Value)           { rv.c = C.LLVMGetPreviousIns
 
 // Operations on call sites
 func (v Value) SetInstructionCallConv(cc CallConv) {
-	C.LLVMSetInstructionCallConv(v.c, C.unsigned(cc.c))
+	C.LLVMSetInstructionCallConv(v.c, C.unsigned(cc))
 }
-func (v Value) InstructionCallConv() (cc CallConv) {
-	cc.c = C.LLVMCallConv(C.LLVMGetInstructionCallConv(v.c))
-	return
+func (v Value) InstructionCallConv() CallConv {
+	return CallConv(C.LLVMCallConv(C.LLVMGetInstructionCallConv(v.c)))
 }
 
 //TODO
@@ -1270,7 +1248,7 @@ func (b Builder) CreateXor(lhs, rhs Value, name string) (v Value) {
 }
 func (b Builder) CreateBinOp(op Opcode, lhs, rhs Value, name string) (v Value) {
 	cname := C.CString(name)
-	v.c = C.LLVMBuildBinOp(b.c, op.c, lhs.c, rhs.c, cname)
+	v.c = C.LLVMBuildBinOp(b.c, C.LLVMOpcode(op), lhs.c, rhs.c, cname)
 	C.free(unsafe.Pointer(cname))
 	return
 }
@@ -1475,7 +1453,7 @@ func (b Builder) CreateTruncOrBitCast(val Value, t Type, name string) (v Value) 
 }
 func (b Builder) CreateCast(val Value, op Opcode, t Type, name string) (v Value) {
 	cname := C.CString(name)
-	v.c = C.LLVMBuildCast(b.c, op.c, val.c, t.c, cname)
+	v.c = C.LLVMBuildCast(b.c, C.LLVMOpcode(op), val.c, t.c, cname)
 	C.free(unsafe.Pointer(cname))
 	return
 } //
@@ -1499,15 +1477,15 @@ func (b Builder) CreateFPCast(val Value, t Type, name string) (v Value) {
 }
 
 // Comparisons
-func (b Builder) CreateICmp(op IntPredicate, lhs, rhs Value, name string) (v Value) {
+func (b Builder) CreateICmp(pred IntPredicate, lhs, rhs Value, name string) (v Value) {
 	cname := C.CString(name)
-	v.c = C.LLVMBuildICmp(b.c, op.c, lhs.c, rhs.c, cname)
+	v.c = C.LLVMBuildICmp(b.c, C.LLVMIntPredicate(pred), lhs.c, rhs.c, cname)
 	C.free(unsafe.Pointer(cname))
 	return
 }
-func (b Builder) CreateFCmp(op FloatPredicate, lhs, rhs Value, name string) (v Value) {
+func (b Builder) CreateFCmp(pred FloatPredicate, lhs, rhs Value, name string) (v Value) {
 	cname := C.CString(name)
-	v.c = C.LLVMBuildFCmp(b.c, op.c, lhs.c, rhs.c, cname)
+	v.c = C.LLVMBuildFCmp(b.c, C.LLVMRealPredicate(pred), lhs.c, rhs.c, cname)
 	C.free(unsafe.Pointer(cname))
 	return
 }
