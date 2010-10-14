@@ -158,11 +158,10 @@ func (ee ExecutionEngine) RecompileAndRelinkFunction(f Value) unsafe.Pointer {
 	return C.LLVMRecompileAndRelinkFunction(ee.C, f.C)
 }
 
-// TODO(nsf): undefined TargetData
-//func (ee ExecutionEngine) TargetData() (td TargetData) {
-//	td.C = C.LLVMGetExecutionEngineTargetData(ee.C)
-//	return
-//}
+func (ee ExecutionEngine) TargetData() (td TargetData) {
+	td.C = C.LLVMGetExecutionEngineTargetData(ee.C)
+	return
+}
 
 func (ee ExecutionEngine) AddGlobalMapping(global Value, addr unsafe.Pointer) {
 	C.LLVMAddGlobalMapping(ee.C, global.C, addr)
