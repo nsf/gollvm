@@ -1684,9 +1684,9 @@ func NewMemoryBufferFromFile(path string) (b MemoryBuffer, err os.Error) {
 	} else {
 		b.C = nil
 		err = os.NewError(C.GoString(cmsg))
+		C.LLVMDisposeMessage(cmsg)
 	}
 	C.free(unsafe.Pointer(cpath))
-	C.LLVMDisposeMessage(cmsg)
 	return
 }
 
@@ -1698,8 +1698,8 @@ func NewMemoryBufferFromStdin() (b MemoryBuffer, err os.Error) {
 	} else {
 		b.C = nil
 		err = os.NewError(C.GoString(cmsg))
+		C.LLVMDisposeMessage(cmsg)
 	}
-	C.LLVMDisposeMessage(cmsg)
 	return
 }
 
