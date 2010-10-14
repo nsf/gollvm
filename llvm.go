@@ -296,11 +296,19 @@ func NewContext() Context    { return Context{C.LLVMContextCreate()} }
 func GlobalContext() Context { return Context{C.LLVMGetGlobalContext()} }
 func (c Context) Dispose()   { C.LLVMContextDispose(c.c) }
 
-/*
-unsigned LLVMGetMDKindIDInContext(LLVMContextRef C, const char* Name,
-                                  unsigned SLen);
-unsigned LLVMGetMDKindID(const char* Name, unsigned SLen);
-*/
+func (c Context) MDKindID(name string) (id int) {
+	cname := C.CString(name)
+	id = int(C.LLVMGetMDKindIDInContext(c.c, cname, C.unsigned(len(name))))
+	C.free(unsafe.Pointer(cname))
+	return
+}
+
+func MDKindID(name string) (id int) {
+	cname := C.CString(name)
+	id = int(C.LLVMGetMDKindID(cname, C.unsigned(len(name))))
+	C.free(unsafe.Pointer(cname))
+	return
+}
 
 //-------------------------------------------------------------------------
 // llvm.Module
