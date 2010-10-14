@@ -10,7 +10,6 @@ import "unsafe"
 // TODO: Add comments
 // TODO: Promote *InContext functions to Context methods?
 // TODO: Use Go's reflection in order to simplify bindings?
-// TODO: Add IsNil for all ref types
 // TODO: Add type safety?
 
 type (
