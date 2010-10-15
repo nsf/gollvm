@@ -49,7 +49,11 @@ func test() {
 	res.AddIncoming(phi_vals, phi_blocks)
 	builder.CreateRet(res)
 
-	//LLVMVerifyModule(mod, LLVMAbortProcessAction, &error);
+	err := llvm.VerifyModule(mod, llvm.ReturnStatusAction)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	engine, err := llvm.NewJITCompiler(mod, 2)
 	if err != nil {
