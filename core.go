@@ -1003,10 +1003,9 @@ func (v Value) SetGC(name string) {
 	C.LLVMSetGC(v.C, cname)
 	C.free(unsafe.Pointer(cname))
 }
-func (v Value) AddFunctionAttr(a Attribute) { C.LLVMAddFunctionAttr(v.C, C.LLVMAttribute(a)) }
-//TODO
-//LLVMAttribute LLVMGetFunctionAttr(LLVMValueRef Fn);
-//void LLVMRemoveFunctionAttr(LLVMValueRef Fn, LLVMAttribute PA);
+func (v Value) AddFunctionAttr(a Attribute)    { C.LLVMAddFunctionAttr(v.C, C.LLVMAttribute(a)) }
+func (v Value) FunctionAttr() Attribute        { return Attribute(C.LLVMGetFunctionAttr(v.C)) }
+func (v Value) RemoveFunctionAttr(a Attribute) { C.LLVMRemoveFunctionAttr(v.C, C.LLVMAttribute(a)) }
 
 // Operations on parameters
 func (v Value) ParamsCount() int { return int(C.LLVMCountParams(v.C)) }
@@ -1015,18 +1014,15 @@ func (v Value) Params() []Value {
 	C.LLVMGetParams(v.C, llvmValueRefPtr(&out[0]))
 	return out
 }
-func (v Value) Param(i int) (rv Value)  { rv.C = C.LLVMGetParam(v.C, C.unsigned(i)); return }
-func (v Value) ParamParent() (rv Value) { rv.C = C.LLVMGetParamParent(v.C); return }
-func (v Value) FirstParam() (rv Value)  { rv.C = C.LLVMGetFirstParam(v.C); return }
-func (v Value) LastParam() (rv Value)   { rv.C = C.LLVMGetLastParam(v.C); return }
-func NextParam(v Value) (rv Value)      { rv.C = C.LLVMGetNextParam(v.C); return }
-func PrevParam(v Value) (rv Value)      { rv.C = C.LLVMGetPreviousParam(v.C); return }
-
-//TODO
-//void LLVMAddAttribute(LLVMValueRef Arg, LLVMAttribute PA);
-//void LLVMRemoveAttribute(LLVMValueRef Arg, LLVMAttribute PA);
-//LLVMAttribute LLVMGetAttribute(LLVMValueRef Arg);
-
+func (v Value) Param(i int) (rv Value)      { rv.C = C.LLVMGetParam(v.C, C.unsigned(i)); return }
+func (v Value) ParamParent() (rv Value)     { rv.C = C.LLVMGetParamParent(v.C); return }
+func (v Value) FirstParam() (rv Value)      { rv.C = C.LLVMGetFirstParam(v.C); return }
+func (v Value) LastParam() (rv Value)       { rv.C = C.LLVMGetLastParam(v.C); return }
+func NextParam(v Value) (rv Value)          { rv.C = C.LLVMGetNextParam(v.C); return }
+func PrevParam(v Value) (rv Value)          { rv.C = C.LLVMGetPreviousParam(v.C); return }
+func (v Value) AddAttribute(a Attribute)    { C.LLVMAddAttribute(v.C, C.LLVMAttribute(a)) }
+func (v Value) RemoveAttribute(a Attribute) { C.LLVMRemoveAttribute(v.C, C.LLVMAttribute(a)) }
+func (v Value) Attribute() Attribute        { return Attribute(C.LLVMGetAttribute(v.C)) }
 func (v Value) SetParamAlignment(align int) { C.LLVMSetParamAlignment(v.C, C.unsigned(align)) }
 
 // Operations on basic blocks
@@ -1069,11 +1065,9 @@ func InsertBasicBlock(ref BasicBlock, name string) (bb BasicBlock) {
 	C.free(unsafe.Pointer(cname))
 	return
 }
-func (bb BasicBlock) EraseFromParent() { C.LLVMDeleteBasicBlock(bb.C) }
-
-//TODO
-//void LLVMMoveBasicBlockBefore(LLVMBasicBlockRef BB, LLVMBasicBlockRef MovePos);
-//void LLVMMoveBasicBlockAfter(LLVMBasicBlockRef BB, LLVMBasicBlockRef MovePos);
+func (bb BasicBlock) EraseFromParent()          { C.LLVMDeleteBasicBlock(bb.C) }
+func (bb BasicBlock) MoveBefore(pos BasicBlock) { C.LLVMMoveBasicBlockBefore(bb.C, pos.C) }
+func (bb BasicBlock) MoveAfter(pos BasicBlock)  { C.LLVMMoveBasicBlockAfter(bb.C, pos.C) }
 
 // Operations on instructions
 func (v Value) InstructionParent() (bb BasicBlock) { bb.C = C.LLVMGetInstructionParent(v.C); return }
@@ -1089,12 +1083,12 @@ func (v Value) SetInstructionCallConv(cc CallConv) {
 func (v Value) InstructionCallConv() CallConv {
 	return CallConv(C.LLVMCallConv(C.LLVMGetInstructionCallConv(v.C)))
 }
-
-//TODO
-//void LLVMAddInstrAttribute(LLVMValueRef Instr, unsigned index, LLVMAttribute);
-//void LLVMRemoveInstrAttribute(LLVMValueRef Instr, unsigned index, 
-//                              LLVMAttribute);
-
+func (v Value) AddInstrAttribute(i int, a Attribute) {
+	C.LLVMAddInstrAttribute(v.C, C.unsigned(i), C.LLVMAttribute(a))
+}
+func (v Value) RemoveInstrAttribute(i int, a Attribute) {
+	C.LLVMRemoveInstrAttribute(v.C, C.unsigned(i), C.LLVMAttribute(a))
+}
 func (v Value) SetInstrParamAlignment(i int, align int) {
 	C.LLVMSetInstrParamAlignment(v.C, C.unsigned(i), C.unsigned(align))
 }
