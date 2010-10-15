@@ -9,7 +9,6 @@ import "unsafe"
 import "os"
 
 // TODO: Add comments
-// TODO: Promote *InContext functions to Context methods?
 // TODO: Use Go's reflection in order to simplify bindings?
 // TODO: Add type safety?
 
@@ -324,7 +323,7 @@ func NewModule(name string) (m Module) {
 	return
 }
 
-func NewModuleInContext(name string, c Context) (m Module) {
+func (c Context) NewModule(name string) (m Module) {
 	cname := C.CString(name)
 	m.C = C.LLVMModuleCreateWithNameInContext(cname, c.C)
 	C.free(unsafe.Pointer(cname))
@@ -416,13 +415,12 @@ func (t Type) Context() (c Context) {
 }
 
 // Operations on integer types
-func Int1TypeInContext(c Context) (t Type)  { t.C = C.LLVMInt1TypeInContext(c.C); return }
-func Int8TypeInContext(c Context) (t Type)  { t.C = C.LLVMInt8TypeInContext(c.C); return }
-func Int16TypeInContext(c Context) (t Type) { t.C = C.LLVMInt16TypeInContext(c.C); return }
-func Int32TypeInContext(c Context) (t Type) { t.C = C.LLVMInt32TypeInContext(c.C); return }
-func Int64TypeInContext(c Context) (t Type) { t.C = C.LLVMInt64TypeInContext(c.C); return }
-
-func IntTypeInContext(c Context) (t Type, numbits int) {
+func (c Context) Int1Type() (t Type)  { t.C = C.LLVMInt1TypeInContext(c.C); return }
+func (c Context) Int8Type() (t Type)  { t.C = C.LLVMInt8TypeInContext(c.C); return }
+func (c Context) Int16Type() (t Type) { t.C = C.LLVMInt16TypeInContext(c.C); return }
+func (c Context) Int32Type() (t Type) { t.C = C.LLVMInt32TypeInContext(c.C); return }
+func (c Context) Int64Type() (t Type) { t.C = C.LLVMInt64TypeInContext(c.C); return }
+func (c Context) IntType() (t Type, numbits int) {
 	t.C = C.LLVMIntTypeInContext(c.C, C.unsigned(numbits))
 	return
 }
@@ -443,11 +441,11 @@ func (t Type) IntTypeWidth() int {
 }
 
 // Operations on real types
-func FloatTypeInContext(c Context) (t Type)    { t.C = C.LLVMFloatTypeInContext(c.C); return }
-func DoubleTypeInContext(c Context) (t Type)   { t.C = C.LLVMDoubleTypeInContext(c.C); return }
-func X86FP80TypeInContext(c Context) (t Type)  { t.C = C.LLVMX86FP80TypeInContext(c.C); return }
-func FP128TypeInContext(c Context) (t Type)    { t.C = C.LLVMFP128TypeInContext(c.C); return }
-func PPCFP128TypeInContext(c Context) (t Type) { t.C = C.LLVMPPCFP128TypeInContext(c.C); return }
+func (c Context) FloatType() (t Type)    { t.C = C.LLVMFloatTypeInContext(c.C); return }
+func (c Context) DoubleType() (t Type)   { t.C = C.LLVMDoubleTypeInContext(c.C); return }
+func (c Context) X86FP80Type() (t Type)  { t.C = C.LLVMX86FP80TypeInContext(c.C); return }
+func (c Context) FP128Type() (t Type)    { t.C = C.LLVMFP128TypeInContext(c.C); return }
+func (c Context) PPCFP128Type() (t Type) { t.C = C.LLVMPPCFP128TypeInContext(c.C); return }
 
 func FloatType() (t Type)    { t.C = C.LLVMFloatType(); return }
 func DoubleType() (t Type)   { t.C = C.LLVMDoubleType(); return }
@@ -474,7 +472,7 @@ func (t Type) ParamTypes() []Type {
 }
 
 // Operations on struct types
-func StructTypeInContext(c Context, elementTypes []Type, packed bool) (t Type) {
+func (c Context) StructType(elementTypes []Type, packed bool) (t Type) {
 	t.C = C.LLVMStructTypeInContext(c.C,
 		llvmTypeRefPtr(&elementTypes[0]),
 		C.unsigned(len(elementTypes)),
@@ -517,9 +515,9 @@ func (t Type) PointerAddressSpace() int { return int(C.LLVMGetPointerAddressSpac
 func (t Type) VectorSize() int          { return int(C.LLVMGetVectorSize(t.C)) }
 
 // Operations on other types
-func VoidTypeInContext(c Context) (t Type)   { t.C = C.LLVMVoidTypeInContext(c.C); return }
-func LabelTypeInContext(c Context) (t Type)  { t.C = C.LLVMLabelTypeInContext(c.C); return }
-func OpaqueTypeInContext(c Context) (t Type) { t.C = C.LLVMOpaqueTypeInContext(c.C); return }
+func (c Context) VoidType() (t Type)   { t.C = C.LLVMVoidTypeInContext(c.C); return }
+func (c Context) LabelType() (t Type)  { t.C = C.LLVMLabelTypeInContext(c.C); return }
+func (c Context) OpaqueType() (t Type) { t.C = C.LLVMOpaqueTypeInContext(c.C); return }
 
 func VoidType() (t Type)   { t.C = C.LLVMVoidType(); return }
 func LabelType() (t Type)  { t.C = C.LLVMLabelType(); return }
@@ -723,7 +721,7 @@ func (v Value) IsUndef() bool           { return C.LLVMIsUndef(v.C) != 0 }
 func ConstPointerNull(t Type) (v Value) { v.C = C.LLVMConstPointerNull(t.C); return }
 
 // Operations on metadata
-func MDStringInContext(c Context, str string) (v Value) {
+func (c Context) MDString(str string) (v Value) {
 	cstr := C.CString(str)
 	v.C = C.LLVMMDStringInContext(c.C, cstr, C.unsigned(len(str)))
 	C.free(unsafe.Pointer(cstr))
@@ -735,7 +733,7 @@ func MDString(str string) (v Value) {
 	C.free(unsafe.Pointer(cstr))
 	return
 }
-func MDNodeInContext(c Context, vals []Value) (v Value) {
+func (c Context) MDNode(vals []Value) (v Value) {
 	v.C = C.LLVMMDNodeInContext(c.C, llvmValueRefPtr(&vals[0]), C.unsigned(len(vals)))
 	return
 }
@@ -772,14 +770,14 @@ func (v Value) ZExtValue() uint64 { return uint64(C.LLVMConstIntGetZExtValue(v.C
 func (v Value) SExtValue() int64  { return int64(C.LLVMConstIntGetSExtValue(v.C)) }
 
 // Operations on composite constants
-func ConstStringInContext(c Context, str string, addnull bool) (v Value) {
+func (c Context) ConstString(str string, addnull bool) (v Value) {
 	cstr := C.CString(str)
 	v.C = C.LLVMConstStringInContext(c.C, cstr,
 		C.unsigned(len(str)), boolToLLVMBool(!addnull))
 	C.free(unsafe.Pointer(cstr))
 	return
 }
-func ConstStructInContext(c Context, constVals []Value, packed bool) (v Value) {
+func (c Context) ConstStruct(constVals []Value, packed bool) (v Value) {
 	v.C = C.LLVMConstStructInContext(c.C,
 		llvmValueRefPtr(&constVals[0]),
 		C.unsigned(len(constVals)),
@@ -1041,13 +1039,13 @@ func (v Value) LastBasicBlock() (bb BasicBlock)     { bb.C = C.LLVMGetLastBasicB
 func NextBasicBlock(bb BasicBlock) (rbb BasicBlock) { rbb.C = C.LLVMGetNextBasicBlock(bb.C); return }
 func PrevBasicBlock(bb BasicBlock) (rbb BasicBlock) { rbb.C = C.LLVMGetPreviousBasicBlock(bb.C); return }
 func (v Value) EntryBasicBlock() (bb BasicBlock)    { bb.C = C.LLVMGetEntryBasicBlock(v.C); return }
-func AddBasicBlockInContext(c Context, f Value, name string) (bb BasicBlock) {
+func (c Context) AddBasicBlock(f Value, name string) (bb BasicBlock) {
 	cname := C.CString(name)
 	bb.C = C.LLVMAppendBasicBlockInContext(c.C, f.C, cname)
 	C.free(unsafe.Pointer(cname))
 	return
 }
-func InsertBasicBlockInContext(c Context, ref BasicBlock, name string) (bb BasicBlock) {
+func (c Context) InsertBasicBlock(ref BasicBlock, name string) (bb BasicBlock) {
 	cname := C.CString(name)
 	bb.C = C.LLVMInsertBasicBlockInContext(c.C, ref.C, cname)
 	C.free(unsafe.Pointer(cname))
@@ -1119,8 +1117,8 @@ func (v Value) IncomingBlock(i int) (bb BasicBlock) {
 // An instruction builder represents a point within a basic block, and is the
 // exclusive means of building instructions using the C interface.
 
-func NewBuilderInContext(c Context) (b Builder) { b.C = C.LLVMCreateBuilderInContext(c.C); return }
-func NewBuilder() (b Builder)                   { b.C = C.LLVMCreateBuilder(); return }
+func (c Context) NewBuilder() (b Builder) { b.C = C.LLVMCreateBuilderInContext(c.C); return }
+func NewBuilder() (b Builder)             { b.C = C.LLVMCreateBuilder(); return }
 func (b Builder) SetInsertPoint(block BasicBlock, instr Value) {
 	C.LLVMPositionBuilder(b.C, block.C, instr.C)
 }
