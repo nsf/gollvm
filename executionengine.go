@@ -59,8 +59,8 @@ func (g GenericValue) Dispose() { C.LLVMDisposeGenericValue(g.C) }
 
 func NewExecutionEngine(m Module) (ee ExecutionEngine, err os.Error) {
 	var cmsg *C.char
-	ok := C.LLVMCreateExecutionEngineForModule(&ee.C, m.C, &cmsg)
-	if ok == 0 {
+	fail := C.LLVMCreateExecutionEngineForModule(&ee.C, m.C, &cmsg)
+	if fail == 0 {
 		err = nil
 	} else {
 		ee.C = nil
@@ -72,8 +72,8 @@ func NewExecutionEngine(m Module) (ee ExecutionEngine, err os.Error) {
 
 func NewInterpreter(m Module) (ee ExecutionEngine, err os.Error) {
 	var cmsg *C.char
-	ok := C.LLVMCreateInterpreterForModule(&ee.C, m.C, &cmsg)
-	if ok == 0 {
+	fail := C.LLVMCreateInterpreterForModule(&ee.C, m.C, &cmsg)
+	if fail == 0 {
 		err = nil
 	} else {
 		ee.C = nil
@@ -84,8 +84,8 @@ func NewInterpreter(m Module) (ee ExecutionEngine, err os.Error) {
 }
 func NewJITCompiler(m Module, optLevel int) (ee ExecutionEngine, err os.Error) {
 	var cmsg *C.char
-	ok := C.LLVMCreateJITCompilerForModule(&ee.C, m.C, C.unsigned(optLevel), &cmsg)
-	if ok == 0 {
+	fail := C.LLVMCreateJITCompilerForModule(&ee.C, m.C, C.unsigned(optLevel), &cmsg)
+	if fail == 0 {
 		err = nil
 	} else {
 		ee.C = nil

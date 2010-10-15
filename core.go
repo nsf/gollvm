@@ -12,8 +12,6 @@ import "os"
 // TODO: Promote *InContext functions to Context methods?
 // TODO: Use Go's reflection in order to simplify bindings?
 // TODO: Add type safety?
-// TODO: Doublecheck LLVMBool functions, LLVM C API uses stupid convention
-// where 0 is true and 1 is false
 
 type (
 	Context struct {
@@ -1680,8 +1678,8 @@ func (mp ModuleProvider) Dispose() { C.LLVMDisposeModuleProvider(mp.C) }
 func NewMemoryBufferFromFile(path string) (b MemoryBuffer, err os.Error) {
 	var cmsg *C.char
 	cpath := C.CString(path)
-	ok := C.LLVMCreateMemoryBufferWithContentsOfFile(cpath, &b.C, &cmsg)
-	if ok == 0 {
+	fail := C.LLVMCreateMemoryBufferWithContentsOfFile(cpath, &b.C, &cmsg)
+	if fail == 0 {
 		err = nil
 	} else {
 		b.C = nil
@@ -1694,8 +1692,8 @@ func NewMemoryBufferFromFile(path string) (b MemoryBuffer, err os.Error) {
 
 func NewMemoryBufferFromStdin() (b MemoryBuffer, err os.Error) {
 	var cmsg *C.char
-	ok := C.LLVMCreateMemoryBufferWithSTDIN(&b.C, &cmsg)
-	if ok == 0 {
+	fail := C.LLVMCreateMemoryBufferWithSTDIN(&b.C, &cmsg)
+	if fail == 0 {
 		err = nil
 	} else {
 		b.C = nil
