@@ -6,7 +6,6 @@ package llvm
 */
 import "C"
 import "unsafe"
-//import "os"
 
 type (
 	TargetData struct {
