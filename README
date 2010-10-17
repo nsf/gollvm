@@ -1,3 +1,11 @@
 LLVM bindings for the Go programming language
 
-Work in progress..
+Most of the stuff is ported. API is primitive, it doesn't use Go's type system
+extensively to provide safety. I think it's possible to mimic LLVM C++ API type
+hierarchy quite closely using Go's methods and type embedding. But I haven't
+done that, because doing that requires a lot of usability testing. If anyone is
+interested in using Go LLVM bindings for a very big and serious project, let me
+know. In that case we can work more closely on improving the bindings API.
+
+P.S. Most notable things that are still missing are BitReader and BitWriter,
+I'll implement them soon.
