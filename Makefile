@@ -6,7 +6,8 @@ CGOFILES=core.go\
 	 target.go\
 	 transforms_scalar.go\
 	 transforms_ipo.go\
-	 analysis.go
+	 analysis.go\
+	 bitwriter.go
 
 CGO_CFLAGS=`llvm-config --cflags`
 CGO_LDFLAGS=-lstdc++ `llvm-config --ldflags --libs all`
