@@ -13,6 +13,9 @@ import "os"
 // TODO: Add type safety?
 
 type (
+	// I'm using these weird structs here, because *Ref types are pointers
+	// and Go's spec says that I can't use a pointer as a receiver base
+	// type.
 	Context struct {
 		C C.LLVMContextRef
 	}
