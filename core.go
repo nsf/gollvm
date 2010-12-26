@@ -458,17 +458,16 @@ func PPCFP128Type() (t Type) { t.C = C.LLVMPPCFP128Type(); return }
 
 // Operations on function types
 func FunctionType(returnType Type, paramTypes []Type, isVarArg bool) (t Type) {
-	if paramTypes == nil {
-		t.C = C.LLVMFunctionType(returnType.C,
-			nil,
-			C.unsigned(len(paramTypes)),
-			boolToLLVMBool(isVarArg))
-	} else {
-		t.C = C.LLVMFunctionType(returnType.C,
-			llvmTypeRefPtr(&paramTypes[0]),
-			C.unsigned(len(paramTypes)),
-			boolToLLVMBool(isVarArg))
+	var pt *C.LLVMTypeRef
+	var ptlen C.unsigned
+	if paramTypes != nil {
+		pt = llvmTypeRefPtr(&paramTypes[0])
+		ptlen = C.unsigned(len(paramTypes))
 	}
+	t.C = C.LLVMFunctionType(returnType.C,
+		pt,
+		ptlen,
+		boolToLLVMBool(isVarArg))
 	return
 }
 
