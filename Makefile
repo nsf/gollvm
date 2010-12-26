@@ -10,6 +10,6 @@ CGOFILES=core.go\
 	 bitwriter.go
 
 CGO_CFLAGS=`llvm-config --cflags`
-CGO_LDFLAGS=-lstdc++ `llvm-config --ldflags --libs all`
+CGO_LDFLAGS=`llvm-config --ldflags` -Wl,-L`llvm-config --libdir` -lLLVM-`llvm-config --version`
 
 include $(GOROOT)/src/Make.pkg
