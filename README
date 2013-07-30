@@ -1,3 +1,8 @@
+WARNING: I'm not working on this project anymore, for a more recent version,
+take a look at axw's fork: https://github.com/axw/gollvm.
+
+-----------------------------------------------------------------------------
+
 LLVM bindings for the Go programming language
 
 Most of the stuff is ported. API is primitive, it doesn't use Go's type system
